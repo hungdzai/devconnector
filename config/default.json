@@ -1,0 +1,3 @@
+{
+  "mongoURI": "mongodb+srv://hungapp:2003@cluster0-nbqma.mongodb.net/test?retryWrites=true"
+}
