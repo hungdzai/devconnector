@@ -1,3 +1,6 @@
 {
-  "mongoURI": "mongodb+srv://hungapp:2003@cluster0-nbqma.mongodb.net/test?retryWrites=true"
+  "mongoURI": "mongodb+srv://hungapp:2003@cluster0-nbqma.mongodb.net/test?retryWrites=true",
+  "jwtSecret": "mysecrettoken",
+  "githubClientId": "f69ec19449114e82c79d",
+  "githubSecret": "832750aebb48cfcc865361c6720f17ae14643579"
 }
