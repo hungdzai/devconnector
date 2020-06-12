@@ -1,15 +1,14 @@
 const express = require("express")
 const request = require("request")
-const config = require("config")
+const uuid = require("uuid")
 const router = express.Router()
-
 const { check, validationResult } = require("express-validator/check")
-
 import Profile from "../../models/Profile"
 import ProfileAccess from "../../dataLayer/profileAccess"
 import UserAccess from "../../dataLayer/userAccess"
 import requireAuth from "../../middleware/requireAuth"
-import { profile } from "console"
+import { config } from "../../config/config"
+
 const profileAccess = new ProfileAccess()
 
 // @route   GET api/profile/me
@@ -74,6 +73,7 @@ router.post(
     if (skills) {
       profileFields.skills = skills.split(",").map((skill) => skill.trim())
     }
+
     // Build social object
     if (youtube) profileFields.social.youtube = youtube
     if (twitter) profileFields.social.twitter = twitter
@@ -116,9 +116,6 @@ router.get("/user/:user_id", async (req, res) => {
     res.json(profile)
   } catch (err) {
     console.error(err.message)
-    if (err.kind == "ObjectId") {
-      return res.status(400).json({ msg: "Profile not found" })
-    }
     res.status(500).send("Server Error")
   }
 })
@@ -172,6 +169,7 @@ router.put(
     } = req.body
 
     const newExp = {
+      id: uuid.v4(),
       title,
       company,
       location,
@@ -183,8 +181,10 @@ router.put(
     try {
       const user = req.user.id
       const profile = await profileAccess.getProfile(user)
-      profile.experience.unshift(newExp)
-      await profileAccess.createProfile(user)
+      if (!profile.experience) {
+        profile.experience = [newExp]
+      } else profile.experience.unshift(newExp)
+      await profileAccess.createProfile(profile)
       res.json(profile)
     } catch (err) {
       console.error(err.message)
@@ -198,13 +198,17 @@ router.put(
 // @access  Private
 router.delete("/experience/:exp_id", requireAuth, async (req, res) => {
   try {
-    const profile = await Profile.findOne({ user: req.user.id })
+    const user = req.user.id
+    const profile = await profileAccess.getProfile(user)
     // Get remove index
     const removeIndex = profile.experience
       .map((item) => item.id)
       .indexOf(req.params.exp_id)
+    if (removeIndex < 0) {
+      throw Error("Not found exp_id ")
+    }
     profile.experience.splice(removeIndex, 1)
-    await profile.save()
+    await profileAccess.createProfile(profile)
     res.json(profile)
   } catch (err) {
     console.error(err.message)
@@ -241,6 +245,7 @@ router.put(
       description,
     } = req.body
     const newEdu = {
+      id: uuid.v4(),
       school,
       degree,
       fieldofstudy,
@@ -250,9 +255,12 @@ router.put(
       description,
     }
     try {
-      const profile = await Profile.findOne({ user: req.user.id })
-      profile.education.unshift(newEdu)
-      await profile.save()
+      const user = req.user.id
+      const profile = await profileAccess.getProfile(user)
+      if (!profile.education) {
+        profile.education = [newEdu]
+      } else profile.education.unshift(newEdu)
+      await profileAccess.createProfile(profile)
       res.json(profile)
     } catch (err) {
       console.error(err.message)
@@ -266,13 +274,17 @@ router.put(
 // @access  Private
 router.delete("/education/:edu_id", requireAuth, async (req, res) => {
   try {
-    const profile = await Profile.findOne({ user: req.user.id })
+    const user = req.user.id
+    const profile = await profileAccess.getProfile(user)
     // Get remove index
     const removeIndex = profile.education
       .map((item) => item.id)
       .indexOf(req.params.edu_id)
+    if (removeIndex < 0) {
+      throw Error("Not found edu_id ")
+    }
     profile.education.splice(removeIndex, 1)
-    await profile.save()
+    await profileAccess.createProfile(profile)
     res.json(profile)
   } catch (err) {
     console.error(err.message)
@@ -286,11 +298,7 @@ router.delete("/education/:edu_id", requireAuth, async (req, res) => {
 router.get("/github/:username", (req, res) => {
   try {
     const options = {
-      uri: `https://api.github.com/users/${
-        req.params.username
-      }/repos?per_page=5&sort=created:asc&client_id=${config.get(
-        "githubClientId"
-      )}&client_secret=${config.get("githubSecret")}`,
+      uri: `https://api.github.com/users/${req.params.username}/repos?per_page=5&sort=created:asc&client_id=${config.githubClientId}&client_secret=${config.githubSecret}`,
       method: "GET",
       headers: { "user-agent": "node.js" },
     }

@@ -1,4 +1,5 @@
 export default interface Post {
+  id: string
   date: string
   user: string
   text: string
@@ -11,6 +12,7 @@ export default interface Post {
   ]
   comments: [
     {
+      id: string
       user: string
       text: string
       name: string

@@ -9,6 +9,7 @@ export default interface Profile {
   githubusername: string
   experience: [
     {
+      id: string
       title: string
       company: string
       location: string
@@ -20,6 +21,7 @@ export default interface Profile {
   ]
   education: [
     {
+      id: string
       school: string
       degree: string
       fieldofstudy: string

@@ -1,32 +1,39 @@
 const express = require("express")
 const router = express.Router()
 const { check, validationResult } = require("express-validator/check")
-const auth = require("../../middleware/requireAuth")
-
-const Post = require("../../models/Post")
+const uuid = require("uuid")
+import requireAuth from "../../middleware/requireAuth"
 const User = require("../../models/User")
+import UserAccess from "../../dataLayer/userAccess"
 
+import Post from "../../models/Post"
+import PostAccess from "../../dataLayer/postAccess"
+
+const userAccess = new UserAccess()
+const postAccess = new PostAccess()
 // @route   POST api/posts/test
 // desc     Create a post
 // @access  Private
 router.post(
   "/",
-  [auth, [check("text", "Text is required").not().isEmpty()]],
+  [requireAuth, [check("text", "Text is required").not().isEmpty()]],
   async (req, res) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
       return res.status(400).send({ errors: errors.array() })
     }
     try {
-      const user = await User.findById(req.user.id).select("-password")
-      const newPost = new Post({
+      const user = await userAccess.getUserById(req.user.id)
+      const newPost = {
+        id: uuid.v4(),
+        date: new Date().toISOString(),
         text: req.body.text,
         name: user.name,
         avatar: user.avatar,
         user: req.user.id,
-      })
-      const post = await newPost.save()
-      res.json(post)
+      } as Post
+      await postAccess.createPost(newPost)
+      res.json(newPost)
     } catch (err) {
       console.error(err.message)
       res.status(500).send("Server Error")
@@ -37,9 +44,9 @@ router.post(
 // @route   GET api/posts
 // desc     Get all posts
 // @access  Private
-router.get("/", auth, async (req, res) => {
+router.get("/", requireAuth, async (req, res) => {
   try {
-    const posts = await Post.find().sort({ date: -1 })
+    const posts = await postAccess.getPosts()
     res.json(posts)
   } catch (err) {
     console.error(err.message)
@@ -50,28 +57,24 @@ router.get("/", auth, async (req, res) => {
 // @route   GET api/posts/:id
 // desc     Get post by ID
 // @access  Private
-router.get("/:id", auth, async (req, res) => {
+router.get("/:id", requireAuth, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id)
+    const post = await postAccess.getPostById(req.params.id)
     if (!post) {
       return res.status(404).json({ msg: "Post not found" })
     }
     res.json(post)
   } catch (err) {
     console.error(err.message)
-    if (err.kind === "ObjectId") {
-      //catch invalid objectid
-      return res.status(404).json({ msg: "Post not found" })
-    }
     res.status(500).send("Server Error")
   }
 })
 // @route   DELETE api/posts/:id
 // desc     Delete a post
 // @access  Private
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", requireAuth, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id)
+    const post = await postAccess.getPostById(req.params.id)
     if (!post) {
       return res.status(404).json({ msg: "Post not found" })
     }
@@ -79,7 +82,8 @@ router.delete("/:id", auth, async (req, res) => {
     if (post.user.toString() !== req.user.id) {
       return res.status(401).json({ msg: "User not authorized" })
     }
-    await post.remove()
+    const { user, date } = post
+    await postAccess.deletePost(user, date)
     res.json({ msg: "Post removed" })
   } catch (err) {
     console.error(err.message)
@@ -94,18 +98,22 @@ router.delete("/:id", auth, async (req, res) => {
 // @route   PUT api/posts/like/:id
 // desc     Like a post
 // @access  Private
-router.put("/like/:id", auth, async (req, res) => {
+router.put("/like/:id", requireAuth, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id)
+    const post = await postAccess.getPostById(req.params.id)
     // Check if the post has already been liked
-    if (
-      post.likes.filter((like) => like.user.toString() === req.user.id).length >
-      0
-    ) {
-      return res.status(400).json({ msg: "Post already liked" })
+    if (!post.likes) {
+      post.likes = [{ user: req.user.id }]
+    } else {
+      if (
+        post.likes.filter((like) => like.user.toString() === req.user.id)
+          .length > 0
+      ) {
+        return res.status(400).json({ msg: "Post already liked" })
+      }
+      post.likes.unshift({ user: req.user.id })
     }
-    post.likes.unshift({ user: req.user.id })
-    await post.save()
+    await postAccess.createPost(post)
     res.json(post.likes)
   } catch (err) {
     console.error(err.message)
@@ -116,11 +124,12 @@ router.put("/like/:id", auth, async (req, res) => {
 // @route   PUT api/posts/unlike/:id
 // desc     Unlike a post
 // @access  Private
-router.put("/unlike/:id", auth, async (req, res) => {
+router.put("/unlike/:id", requireAuth, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id)
+    const post = await postAccess.getPostById(req.params.id)
     // Check if the post has already been liked
     if (
+      !post.likes ||
       post.likes.filter((like) => like.user.toString() === req.user.id)
         .length === 0
     ) {
@@ -131,7 +140,7 @@ router.put("/unlike/:id", auth, async (req, res) => {
       .map((like) => like.user.toString())
       .indexOf(req.user.id)
     post.likes.splice(removeIndex, 1)
-    await post.save()
+    await postAccess.createPost(post)
     res.json(post.likes)
   } catch (err) {
     console.error(err.message)
@@ -144,23 +153,27 @@ router.put("/unlike/:id", auth, async (req, res) => {
 // @access  Private
 router.post(
   "/comment/:id",
-  [auth, [check("text", "Text is required").not().isEmpty()]],
+  [requireAuth, [check("text", "Text is required").not().isEmpty()]],
   async (req, res) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
       return res.status(400).send({ errors: errors.array() })
     }
     try {
-      const user = await User.findById(req.user.id).select("-password")
-      const post = await Post.findById(req.params.id)
+      const user = await userAccess.getUserById(req.user.id)
+      const post = await postAccess.getPostById(req.params.id)
       const newComment = {
+        id: uuid.v4(),
         text: req.body.text,
         name: user.name,
         avatar: user.avatar,
         user: req.user.id,
+        date: new Date().toISOString(),
       }
-      post.comments.unshift(newComment)
-      await post.save()
+      if (!post.comments) {
+        post.comments = [newComment]
+      } else post.comments.unshift(newComment)
+      await postAccess.createPost(post)
       res.json(post.comments)
     } catch (err) {
       console.error(err.message)
@@ -171,9 +184,9 @@ router.post(
 // @route   DELETE api/posts/comment/:id/:comment_id
 // desc     Delete a comment
 // @access  Private
-router.delete("/comment/:id/:comment_id", auth, async (req, res) => {
+router.delete("/comment/:id/:comment_id", requireAuth, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id)
+    const post = await postAccess.getPostById(req.params.id)
     if (!post) {
       return res.status(404).json({ msg: "Post not found" })
     }
@@ -190,8 +203,9 @@ router.delete("/comment/:id/:comment_id", auth, async (req, res) => {
       return res.status(401).json({ msg: "User not authorized" })
     }
     // Get remove index
-    comment.remove()
-    await post.save()
+    const removeIndex = post.comments.indexOf(comment)
+    post.comments.splice(removeIndex, 1)
+    await postAccess.createPost(post)
     res.json({ msg: "Post removed" })
   } catch (err) {
     console.error(err.message)
