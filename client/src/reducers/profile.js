@@ -4,19 +4,19 @@ import {
   CLEAR_PROFILE,
   UPDATE_PROFILE,
   GET_PROFILES,
-  GET_REPOS
-}
-  from "../actions/types";
+  GET_REPOS,
+  NO_REPOS
+} from '../actions/types';
 
 const initialState = {
   profile: null,
   profiles: [],
   repos: [],
   loading: true,
-  errors: {}
+  error: {}
 };
 
-export default (state = initialState, action) => {
+export default function (state = initialState, action) {
   const { type, payload } = action;
 
   switch (type) {
@@ -37,20 +37,25 @@ export default (state = initialState, action) => {
       return {
         ...state,
         error: payload,
-        loading: false
+        loading: false,
+        profile: null
       };
     case CLEAR_PROFILE:
       return {
         ...state,
         profile: null,
-        repos: [],
-        loading: false
+        repos: []
       };
     case GET_REPOS:
       return {
         ...state,
         repos: payload,
         loading: false
+      };
+    case NO_REPOS:
+      return {
+        ...state,
+        repos: []
       };
     default:
       return state;

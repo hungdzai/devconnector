@@ -1,31 +1,33 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Moment from 'react-moment';
+import moment from 'moment';
 import { connect } from 'react-redux';
 import { deleteEducation } from '../../actions/profile';
 
 const Education = ({ education, deleteEducation }) => {
-  const educations = education.map(edu => {
-    const { _id, school, degree, from, to } = exp;
-    return (
-      <tr key={_id}>
-        <td>{school}</td>
-        <td className="hide-sm">{degree}</td>
-        <td>
-          <Moment format="YYYY/MM/DD">{from}</Moment> -
-          {to === null ? 'Now' : <Moment format="YYYY/MM/DD">{to}</Moment>}
-        </td>
-        <td>
-          <button
-            onClick={() => deleteEducation(_id)}
-            className="btn btn-danger"
-          >
-            Delete
-          </button>
-        </td>
-      </tr>
-    );
-  });
+  const educations = education.map((edu) => (
+    <tr key={edu.id}>
+      <td>{edu.school}</td>
+      <td className="hide-sm">{edu.degree}</td>
+      <td>
+        <Moment format="YYYY/MM/DD">{moment.utc(edu.from)}</Moment> -{' '}
+        {edu.to === null ? (
+          ' Now'
+        ) : (
+          <Moment format="YYYY/MM/DD">{moment.utc(edu.to)}</Moment>
+        )}
+      </td>
+      <td>
+        <button
+          onClick={() => deleteEducation(edu.id)}
+          className="btn btn-danger"
+        >
+          Delete
+        </button>
+      </td>
+    </tr>
+  ));
 
   return (
     <Fragment>
@@ -35,7 +37,7 @@ const Education = ({ education, deleteEducation }) => {
           <tr>
             <th>School</th>
             <th className="hide-sm">Degree</th>
-            <th className="hide-sm">Year</th>
+            <th className="hide-sm">Years</th>
             <th />
           </tr>
         </thead>
@@ -47,10 +49,7 @@ const Education = ({ education, deleteEducation }) => {
 
 Education.propTypes = {
   education: PropTypes.array.isRequired,
-  deleteExperience: PropTypes.func.isRequired
+  deleteEducation: PropTypes.func.isRequired
 };
 
-export default connect(
-  null,
-  { deleteEducation }
-)(Education);
+export default connect(null, { deleteEducation })(Education);

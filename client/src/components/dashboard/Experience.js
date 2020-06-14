@@ -1,31 +1,33 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Moment from 'react-moment';
+import moment from 'moment';
 import { connect } from 'react-redux';
 import { deleteExperience } from '../../actions/profile';
 
 const Experience = ({ experience, deleteExperience }) => {
-  const experiences = experience.map(exp => {
-    const { _id, company, title, from, to } = exp;
-    return (
-      <tr key={_id}>
-        <td>{company}</td>
-        <td className="hide-sm">{title}</td>
-        <td>
-          <Moment format="YYYY/MM/DD">{from}</Moment> -{' '}
-          {to === null ? 'Now' : <Moment format="YYYY/MM/DD">{to}</Moment>}
-        </td>
-        <td>
-          <button
-            onClick={() => deleteExperience(_id)}
-            className="btn btn-danger"
-          >
-            Delete
-          </button>
-        </td>
-      </tr>
-    );
-  });
+  const experiences = experience.map((exp) => (
+    <tr key={exp.id}>
+      <td>{exp.company}</td>
+      <td className="hide-sm">{exp.title}</td>
+      <td>
+        <Moment format="YYYY/MM/DD">{moment.utc(exp.from)}</Moment> -{' '}
+        {exp.to === null ? (
+          ' Now'
+        ) : (
+          <Moment format="YYYY/MM/DD">{moment.utc(exp.to)}</Moment>
+        )}
+      </td>
+      <td>
+        <button
+          onClick={() => deleteExperience(exp.id)}
+          className="btn btn-danger"
+        >
+          Delete
+        </button>
+      </td>
+    </tr>
+  ));
 
   return (
     <Fragment>
@@ -35,7 +37,7 @@ const Experience = ({ experience, deleteExperience }) => {
           <tr>
             <th>Company</th>
             <th className="hide-sm">Title</th>
-            <th className="hide-sm">Year</th>
+            <th className="hide-sm">Years</th>
             <th />
           </tr>
         </thead>
@@ -50,7 +52,4 @@ Experience.propTypes = {
   deleteExperience: PropTypes.func.isRequired
 };
 
-export default connect(
-  null,
-  { deleteExperience }
-)(Experience);
+export default connect(null, { deleteExperience })(Experience);
