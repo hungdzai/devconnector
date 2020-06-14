@@ -1,5 +1,8 @@
+import User from "./User"
 export default interface Profile {
-  user: string
+  user: User
+  userId: string
+  date: string
   company: string
   website: string
   location: string
@@ -38,5 +41,4 @@ export default interface Profile {
     linkedin: string
     instagram: string
   }
-  date: string
 }

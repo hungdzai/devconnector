@@ -11,16 +11,13 @@ export default class ProfileAccess {
     private readonly table = `DevConnector-Profiles-${stage}`
   ) {}
 
-  async getProfile(user: string) {
+  async getProfile(userId: string) {
     const result = await this.docClient
       .query({
         TableName: this.table,
-        KeyConditionExpression: "#user = :user",
-        ExpressionAttributeNames: {
-          "#user": "user",
-        },
+        KeyConditionExpression: "userId = :userId",
         ExpressionAttributeValues: {
-          ":user": user,
+          ":userId": userId,
         },
       })
       .promise()

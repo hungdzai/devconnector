@@ -4,12 +4,14 @@ const uuid = require("uuid")
 const router = express.Router()
 const { check, validationResult } = require("express-validator/check")
 import Profile from "../../models/Profile"
+import User from "../../models/User"
 import ProfileAccess from "../../dataLayer/profileAccess"
 import UserAccess from "../../dataLayer/userAccess"
 import requireAuth from "../../middleware/requireAuth"
 import { config } from "../../config/config"
 
 const profileAccess = new ProfileAccess()
+const userAccess = new UserAccess()
 
 // @route   GET api/profile/me
 // desc     Get current user profile
@@ -62,24 +64,31 @@ router.post(
 
     // Build profile object
     const profileFields = {} as Profile
-    profileFields.user = req.user.id
+    profileFields.userId = req.user.id
+
+    const user = await userAccess.getUserById(profileFields.userId)
+    profileFields.user = user
+
     profileFields.date = new Date().toISOString()
-    if (company) profileFields.company = company
-    if (website) profileFields.website = website
-    if (location) profileFields.location = location
-    if (bio) profileFields.bio = bio
-    if (status) profileFields.status = status
-    if (githubusername) profileFields.githubusername = githubusername
-    if (skills) {
-      profileFields.skills = skills.split(",").map((skill) => skill.trim())
-    }
+    profileFields.company = company
+    profileFields.website = website
+    profileFields.location = location
+    profileFields.bio = bio
+    profileFields.status = status
+    profileFields.githubusername = githubusername
+
+    profileFields.skills = skills.split(",").map((skill) => skill.trim())
 
     // Build social object
-    if (youtube) profileFields.social.youtube = youtube
-    if (twitter) profileFields.social.twitter = twitter
-    if (facebook) profileFields.social.facebook = facebook
-    if (linkedin) profileFields.social.linkedin = linkedin
-    if (instagram) profileFields.social.instagram = instagram
+    profileFields.social = {}
+    profileFields.social.youtube = youtube
+    profileFields.social.twitter = twitter
+    profileFields.social.facebook = facebook
+    profileFields.social.linkedin = linkedin
+    profileFields.social.instagram = instagram
+
+    profileFields.education = []
+    profileFields.experience = []
 
     try {
       // Create || Update
@@ -131,7 +140,6 @@ router.delete("/", requireAuth, async (req, res) => {
     // Remove profile
     await profileAccess.deleteProfile(user)
     // Remove user
-    const userAccess = new UserAccess()
     await userAccess.deleteUser(user)
     res.json({ msg: "User deleted" })
   } catch (err) {
@@ -181,9 +189,7 @@ router.put(
     try {
       const user = req.user.id
       const profile = await profileAccess.getProfile(user)
-      if (!profile.experience) {
-        profile.experience = [newExp]
-      } else profile.experience.unshift(newExp)
+      profile.experience.unshift(newExp)
       await profileAccess.createProfile(profile)
       res.json(profile)
     } catch (err) {
@@ -257,9 +263,7 @@ router.put(
     try {
       const user = req.user.id
       const profile = await profileAccess.getProfile(user)
-      if (!profile.education) {
-        profile.education = [newEdu]
-      } else profile.education.unshift(newEdu)
+      profile.education.unshift(newEdu)
       await profileAccess.createProfile(profile)
       res.json(profile)
     } catch (err) {

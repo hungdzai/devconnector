@@ -47,13 +47,13 @@ const profilesTableParams = {
   BillingMode: "PAY_PER_REQUEST",
   AttributeDefinitions: [
     {
-      AttributeName: "user",
+      AttributeName: "userId",
       AttributeType: "S",
     },
   ],
   KeySchema: [
     {
-      AttributeName: "user",
+      AttributeName: "userId",
       KeyType: "HASH",
     },
   ],

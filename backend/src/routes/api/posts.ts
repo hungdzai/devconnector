@@ -27,11 +27,13 @@ router.post(
       const newPost = {
         id: uuid.v4(),
         date: new Date().toISOString(),
+        user: req.user.id,
         text: req.body.text,
         name: user.name,
         avatar: user.avatar,
-        user: req.user.id,
-      } as Post
+        likes: [],
+        comments: [],
+      }
       await postAccess.createPost(newPost)
       res.json(newPost)
     } catch (err) {

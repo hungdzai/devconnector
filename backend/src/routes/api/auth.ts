@@ -16,7 +16,6 @@ const userAccess = new UserAccess()
 router.get("/", requireAuth, async (req, res) => {
   try {
     const user = await userAccess.getUserById(req.user.id)
-    console.log(req.user)
     res.json(user)
   } catch (err) {
     console.error(err)

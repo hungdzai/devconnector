@@ -21,7 +21,7 @@ export default class UserAccess {
     return users as User[]
   }
 
-  async getUserById(userId: string) {
+  async getUserById(userId: string): Promise<User> {
     const result = await this.docClient
       .query({
         TableName: this.table,
