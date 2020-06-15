@@ -7,3 +7,8 @@ services:
   backend:
     build: ./backend
     image: ${DOCKER_USERNAME}/devconnector-backend
+
+  proxy:
+    image: ${DOCKER_USERNAME}/devconnector-proxy
+    ports:
+      - "5000:5000"
