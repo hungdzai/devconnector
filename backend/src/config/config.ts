@@ -1,4 +1,4 @@
-const result = require("dotenv").config()
+require("dotenv").config()
 // load env
 export const config = {
   region: process.env.REGION,

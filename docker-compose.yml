@@ -1,0 +1,9 @@
+version: "3"
+services:
+  frontend:
+    build: ./frontend
+    image: ${DOCKER_USERNAME}/devconnector-frontend
+
+  backend:
+    build: ./backend
+    image: ${DOCKER_USERNAME}/devconnector-backend

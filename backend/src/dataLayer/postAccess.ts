@@ -36,7 +36,7 @@ export default class PostAccess {
     return profile as Post[]
   }
 
-  async createPost(post: Post) {
+  async createPost(post: Post): Promise<null> {
     try {
       await this.docClient
         .put({
@@ -51,7 +51,7 @@ export default class PostAccess {
     }
   }
 
-  async deletePost(user: string, date: string) {
+  async deletePost(user: string, date: string): Promise<null> {
     await this.docClient
       .delete({
         TableName: this.table,

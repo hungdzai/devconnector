@@ -54,7 +54,7 @@ export default class UserAccess {
     }
   }
 
-  async createUser(user: User) {
+  async createUser(user: User): Promise<null> {
     await this.docClient
       .put({
         TableName: this.table,
@@ -64,7 +64,7 @@ export default class UserAccess {
     return undefined
   }
 
-  async deleteUser(userId: string) {
+  async deleteUser(userId: string): Promise<null> {
     await this.docClient
       .delete({
         TableName: this.table,

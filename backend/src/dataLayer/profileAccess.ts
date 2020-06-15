@@ -25,7 +25,7 @@ export default class ProfileAccess {
     return profile as Profile
   }
 
-  async createProfile(profile: Profile) {
+  async createProfile(profile: Profile): Promise<null> {
     try {
       await this.docClient
         .put({
@@ -50,7 +50,7 @@ export default class ProfileAccess {
     return profiles as Profile[]
   }
 
-  async deleteProfile(user: string) {
+  async deleteProfile(user: string): Promise<null> {
     await this.docClient
       .delete({
         TableName: this.table,

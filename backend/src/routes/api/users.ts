@@ -8,7 +8,8 @@ const gravatar = require("gravatar")
 const jwt = require("jsonwebtoken")
 import { config } from "../../config/config"
 const { check, validationResult } = require("express-validator/check")
-
+import { Response } from "express"
+import CustomRequest from "../../models/CustomRequest"
 const User = require("../../models/User")
 
 const userAccess = new UserAccess()
@@ -16,7 +17,7 @@ const userAccess = new UserAccess()
 // @route   GET api/users
 // desc     Test route
 // @access  Public
-router.get("/", (req, res) => res.send("User route"))
+router.get("/", (req: CustomRequest, res: Response) => res.send("User route"))
 
 // @route   POST api/users
 // desc     Register user
@@ -31,7 +32,7 @@ router.post(
       "Please enter a password with 6 or more characters"
     ).isLength({ min: 6 }),
   ],
-  async (req, res) => {
+  async (req: CustomRequest, res: Response) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() })
