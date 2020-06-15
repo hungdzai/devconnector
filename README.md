@@ -1,4 +1,4 @@
-# DevConnector REST API
+# DevConnector REST API [![Build Status](https://travis-ci.org/hungapp/devconnector.svg?branch=master)](https://travis-ci.org/hungapp/devconnector)
 
 DevConnector is a simple social network developed for developers. It allows users to register and log into a web client, update personal profile with experience and education history, browse profiles of other users, and post status to the shared feed.
 
@@ -12,6 +12,16 @@ The project is split into 2 parts:
 ---
 
 ## Getting Setup
+
+## Running Locally with Docker
+
+```bash
+docker-compose up
+```
+
+Access the site at: [localhost:80](http://localhost:80)
+
+## Running Locally with npm
 
 ### Installing project dependencies
 
@@ -28,10 +38,6 @@ npm install
 ```
 
 > _tip_: **npm i** is shorthand for **npm install**
-
-## Running the Locally
-
-To run the app locally in developer mode, open terminal and run:
 
 ```bash
 cd  backend

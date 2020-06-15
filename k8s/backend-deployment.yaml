@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-feed
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      pod: api-feed
+
+  template:
+    metadata:
+      labels:
+        pod: api-feed
+    spec:
+      containers:
+        # containers to run in the Pods
+        - name: api-feed
+          image: hungapp/udagram-api-feed
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: '1024Mi'
+              cpu: '250m'
+            limits:
+              memory: '1024Mi'
+              cpu: '500m'
+
+          env:
+            - name: AWS_MEDIA_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: env-config
+                  key: AWS_MEDIA_BUCKET
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: env-config
+                  key: AWS_REGION
+            - name: POSTGRES_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: env-config
+                  key: POSTGRES_HOST
+            - name: POSTGRES_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: env-config
+                  key: POSTGRES_DATABASE
+
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: env-secret
+                  key: JWT_SECRET
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: env-secret
+                  key: POSTGRES_USERNAME
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: env-secret
+                  key: POSTGRES_PASSWORD
+
+          volumeMounts:
+            - name: aws-secret
+              mountPath: '/root/.aws/'
+              readOnly: true
+
+      restartPolicy: Always
+
+      volumes:
+        - name: aws-secret
+          secret:
+            secretName: aws-secret

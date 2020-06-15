@@ -1,5 +1,6 @@
-# Untracked files:
+# modules
 node_modules/
 package-lock.json
 config/default.json
 www/
+.env
