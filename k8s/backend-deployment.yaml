@@ -21,7 +21,7 @@ spec:
           resources:
             requests:
               memory: "512Mi"
-              cpu: "250m"
+              cpu: "300m"
             limits:
               memory: "1024Mi"
               cpu: "500m"
@@ -52,5 +52,12 @@ spec:
                 configMapKeyRef:
                   name: env-config
                   key: GITHUB_CLIENT_SECRET
-
+          volumeMounts:
+            - name: aws-secret
+              mountPath: "/root/.aws/"
+              readOnly: true
       restartPolicy: Always
+      volumes:
+        - name: aws-secret
+          secret:
+            secretName: aws-secret

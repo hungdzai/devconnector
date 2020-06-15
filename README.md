@@ -1,5 +1,7 @@
 # DevConnector REST API [![Build Status](https://travis-ci.org/hungapp/devconnector.svg?branch=master)](https://travis-ci.org/hungapp/devconnector)
 
+Live [here](http://a8064ca3187fd46e09f7df12331bbcb2-2094738819.us-east-2.elb.amazonaws.com/)
+
 DevConnector is a simple social network developed for developers. It allows users to register and log into a web client, update personal profile with experience and education history, browse profiles of other users, and post status to the shared feed.
 
 The project is split into 2 parts:
