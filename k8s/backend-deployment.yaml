@@ -1,78 +1,56 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api-feed
+  name: backend
 spec:
   replicas: 1
-
   selector:
     matchLabels:
-      pod: api-feed
-
+      pod: backend
   template:
     metadata:
       labels:
-        pod: api-feed
+        pod: backend
     spec:
       containers:
-        # containers to run in the Pods
-        - name: api-feed
-          image: hungapp/udagram-api-feed
+        - name: backend
+          image: hungapp/devconnector-backend
+          ports:
+            - containerPort: 5000
           imagePullPolicy: Always
           resources:
             requests:
-              memory: '1024Mi'
-              cpu: '250m'
+              memory: "512Mi"
+              cpu: "250m"
             limits:
-              memory: '1024Mi'
-              cpu: '500m'
+              memory: "1024Mi"
+              cpu: "500m"
 
           env:
-            - name: AWS_MEDIA_BUCKET
+            - name: REGION
               valueFrom:
                 configMapKeyRef:
                   name: env-config
-                  key: AWS_MEDIA_BUCKET
-            - name: AWS_REGION
+                  key: REGION
+            - name: STAGE
               valueFrom:
                 configMapKeyRef:
                   name: env-config
-                  key: AWS_REGION
-            - name: POSTGRES_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: env-config
-                  key: POSTGRES_HOST
-            - name: POSTGRES_DATABASE
-              valueFrom:
-                configMapKeyRef:
-                  name: env-config
-                  key: POSTGRES_DATABASE
-
+                  key: STAGE
             - name: JWT_SECRET
               valueFrom:
-                secretKeyRef:
-                  name: env-secret
+                configMapKeyRef:
+                  name: env-config
                   key: JWT_SECRET
-            - name: POSTGRES_USERNAME
+            - name: GITHUB_CLIENT_ID
               valueFrom:
-                secretKeyRef:
-                  name: env-secret
-                  key: POSTGRES_USERNAME
-            - name: POSTGRES_PASSWORD
+                configMapKeyRef:
+                  name: env-config
+                  key: GITHUB_CLIENT_ID
+            - name: GITHUB_CLIENT_SECRET
               valueFrom:
-                secretKeyRef:
-                  name: env-secret
-                  key: POSTGRES_PASSWORD
-
-          volumeMounts:
-            - name: aws-secret
-              mountPath: '/root/.aws/'
-              readOnly: true
+                configMapKeyRef:
+                  name: env-config
+                  key: GITHUB_CLIENT_SECRET
 
       restartPolicy: Always
-
-      volumes:
-        - name: aws-secret
-          secret:
-            secretName: aws-secret

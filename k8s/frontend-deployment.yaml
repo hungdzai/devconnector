@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    service: frontend
   name: frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      service: frontend
+      pod: frontend
   template:
     metadata:
       labels:
-        service: frontend
+        pod: frontend
         api: external
     spec:
       containers:
         - image: hungapp/devconnector-frontend
           name: frontend
+          ports:
+            - containerPort: 80
           imagePullPolicy: Always
           resources:
             requests:
@@ -26,6 +26,5 @@ spec:
             limits:
               memory: "1024Mi"
               cpu: "500m"
-          ports:
-            - containerPort: 80
+
       restartPolicy: Always
