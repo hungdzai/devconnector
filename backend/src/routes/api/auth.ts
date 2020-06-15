@@ -7,13 +7,15 @@ const { check, validationResult } = require("express-validator/check")
 import requireAuth from "../../middleware/requireAuth"
 import { config } from "../../config/config"
 import UserAccess from "../../dataLayer/userAccess"
+import { Response } from "express"
+import CustomRequest from "../../models/CustomRequest"
 
 const userAccess = new UserAccess()
 
 // @route   GET api/auth
 // desc     Test route
 // @access  Public
-router.get("/", requireAuth, async (req, res) => {
+router.get("/", requireAuth, async (req: CustomRequest, res: Response) => {
   try {
     const user = await userAccess.getUserById(req.user.id)
     res.json(user)
@@ -32,7 +34,7 @@ router.post(
     check("email", "Please include a valid email").isEmail(),
     check("password", "Password is required").exists(),
   ],
-  async (req, res) => {
+  async (req: CustomRequest, res: Response) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() })
