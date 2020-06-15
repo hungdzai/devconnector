@@ -18,7 +18,7 @@ spec:
       containers:
         # containers to run in the Pods
         - name: reverse-proxy
-          image: hungapp/reverse-proxy
+          image: hungapp/devconnector-proxy
           imagePullPolicy: Always
           resources:
             requests:

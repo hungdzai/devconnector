@@ -9,6 +9,7 @@ services:
     image: ${DOCKER_USERNAME}/devconnector-backend
 
   proxy:
+    build: ./proxy
     image: ${DOCKER_USERNAME}/devconnector-proxy
     ports:
       - "5000:5000"
