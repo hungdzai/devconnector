@@ -14,7 +14,7 @@ app.use(function (req: Request, res: Response, next) {
   res.header("Access-Control-Allow-Origin", "*")
   res.header(
     "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-auth-token"
   )
   next()
 })
