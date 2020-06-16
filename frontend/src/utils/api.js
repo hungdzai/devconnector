@@ -4,7 +4,7 @@ import { LOGOUT, CLEAR_PROFILE } from "../actions/types"
 import { apiEndpoint } from "../config"
 
 const api = axios.create({
-  baseURL: `${apiEndpoint}/api`,
+  baseURL: `http://${apiEndpoint}/api`,
   headers: {
     "Content-Type": "application/json",
   },
